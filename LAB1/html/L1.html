@@ -1,0 +1,410 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Machine Learning 1st Lab Assignment - Linear Regression</title><meta name="generator" content="MATLAB 9.4"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-10-12"><meta name="DC.source" content="L1.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Machine Learning 1st Lab Assignment - Linear Regression</h1><!--introduction--><p>Francisco Melo - 84053</p><p>Rodrigo Rego - 89213</p><p>Group Number - 1</p><p>Shift - Sexta 14h</p><p>12/10/2018</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">1. Least Squares Fitting</a></li><li><a href="#2">1.3</a></li><li><a href="#3">1.4</a></li><li><a href="#4">1.5</a></li><li><a href="#5">2. Regularization</a></li><li><a href="#6">2.2/2.4</a></li></ul></div><h2 id="1">1. Least Squares Fitting</h2><h2 id="2">1.3</h2><p>Least Squares Fitting. P=1 to fit a straight line</p><pre class="codeinput">close <span class="string">all</span>;
+clear <span class="string">all</span>;
+
+load <span class="string">data1.mat</span>;
+
+<span class="comment">%polynomial order</span>
+p=1;
+
+<span class="comment">%polynomial fit of the variables x and y</span>
+[beta,ypred]=polynomialFit(x,y,p);
+
+<span class="comment">%plot of fit and training data</span>
+figure;
+plot(x,y,<span class="string">'o'</span>,x,ypred);
+title(<span class="string">'Fit of training data - data1.mat'</span>);
+legend(<span class="string">'y'</span>,<span class="string">'y_{pred.}'</span>,<span class="string">'Location'</span>, <span class="string">'Best'</span>);
+xlabel(<span class="string">'x'</span>);
+ylabel(<span class="string">'y'</span>);
+grid <span class="string">on</span>;
+
+<span class="comment">%Calculation of the sum of squared errors</span>
+erro=y-ypred;
+SSE=erro'*erro;
+clc;
+fprintf(<span class="string">'Q1.3) SSE = %f\n'</span>, SSE);
+</pre><pre class="codeoutput">Q1.3) SSE = 0.743335
+</pre><img vspace="5" hspace="5" src="L1_01.png" alt=""> <h2 id="3">1.4</h2><p>Least Squares Fitting. P=2 to fit a parabola</p><pre class="codeinput">close <span class="string">all</span>;
+clear <span class="string">all</span>;
+
+load <span class="string">data2.mat</span>;
+
+<span class="comment">%Polynomial order</span>
+p=2;
+
+<span class="comment">%polynomial fit of the variables x and y</span>
+[beta,ypred]=polynomialFit(x,y,p);
+
+<span class="comment">%Sort predicted points: order points by X coordinate - only for plotting</span>
+<span class="comment">%purposes</span>
+sorted=(sortrows([x,ypred],1))';
+x_sorted=sorted(1,:);
+ypred_sorted=sorted(2,:);
+
+<span class="comment">%plot of fit and training data</span>
+figure;
+plot(x,y,<span class="string">'o'</span>,x_sorted,ypred_sorted,<span class="string">'-*'</span>);
+title(<span class="string">'Fit of training data - data2.mat'</span>);
+legend(<span class="string">'y'</span>, <span class="string">'y_{pred.}'</span>, <span class="string">'Location'</span>, <span class="string">'Best'</span>);
+xlabel(<span class="string">'x'</span>);
+ylabel(<span class="string">'y'</span>);
+grid <span class="string">on</span>;
+
+<span class="comment">%Calculation of the sum of squared errors</span>
+erro=y-ypred;
+SSE=erro'*erro;
+fprintf(<span class="string">'\nQ1.4) SSE = %f\n'</span>, SSE);
+</pre><pre class="codeoutput">
+Q1.4) SSE = 1.341594
+</pre><img vspace="5" hspace="5" src="L1_02.png" alt=""> <h2 id="4">1.5</h2><pre>Least Squares Fitting. P=2 to fit a parabola with outlier point</pre><pre class="codeinput">close <span class="string">all</span>;
+clear <span class="string">all</span>;
+
+load <span class="string">data2a.mat</span>;
+
+<span class="comment">%Polynomial order</span>
+p=2;
+
+<span class="comment">%polynomial fit of the variables x and y</span>
+[beta,ypred]=polynomialFit(x,y,p);
+
+<span class="comment">%Sort predicted points: order points by X coordinate - only for plotting</span>
+<span class="comment">%purposes</span>
+sorted=(sortrows([x,ypred],1))';
+x_sorted=sorted(1,:);
+ypred_sorted=sorted(2,:);
+
+<span class="comment">%plot of fit and training data</span>
+figure;
+plot(x,y,<span class="string">'o'</span>,x_sorted,ypred_sorted,<span class="string">'-*'</span>);
+title(<span class="string">'Fit of training data - data2a.mat'</span>);
+legend(<span class="string">'y'</span>,<span class="string">'y_{pred.}'</span>,<span class="string">'Location'</span>, <span class="string">'Best'</span>);
+xlabel(<span class="string">'x'</span>);
+ylabel(<span class="string">'y'</span>);
+grid <span class="string">on</span>;
+
+<span class="comment">%Calculation of the sum of squared errors</span>
+erro=y-ypred;
+SSE=erro'*erro;
+fprintf(<span class="string">'\nQ1.5) SSE = %f\n'</span>, SSE);
+</pre><pre class="codeoutput">
+Q1.5) SSE = 5.024873
+</pre><img vspace="5" hspace="5" src="L1_03.png" alt=""> <h2 id="5">2. Regularization</h2><h2 id="6">2.2/2.4</h2><p>Lasso Regression</p><pre class="codeinput">close <span class="string">all</span>;
+clear <span class="string">all</span>;
+
+load <span class="string">data3.mat</span>;
+
+<span class="comment">%Lasso calculation and plot</span>
+[B,FitInfo] = lasso(X,Y);
+lassoPlot(B,FitInfo,<span class="string">'PlotType'</span>,<span class="string">'Lambda'</span>,<span class="string">'XScale'</span>,<span class="string">'log'</span>);
+ylabel(<span class="string">'\beta'</span>);
+hold <span class="string">on</span>;
+grid <span class="string">on</span>;
+
+<span class="comment">%plot LS coefficients(lambda=0) for comparsion</span>
+refline(0,B(:,1));
+
+<span class="comment">%lambda that removes feature 2 (beta2=0) - from visual inspection of the</span>
+<span class="comment">%indexes in the vector of degrees of freedom obtained in FitInfo (when it</span>
+<span class="comment">%transitions from 3 to 2 df)</span>
+lambda=FitInfo.Lambda(60);
+
+<span class="comment">%plot vertical line for lambda in index 60 (when feature 2 shrinks to 0)</span>
+line([lambda lambda],[0,3],<span class="string">'Color'</span>,<span class="string">'red'</span>,<span class="string">'LineStyle'</span>,<span class="string">'--'</span>);
+
+legend(sprintf(<span class="string">'Feature x_{1}'</span>),sprintf(<span class="string">'Feature x_{2}'</span>),sprintf(<span class="string">'Feature x_{3}'</span>),<span class="string">'location'</span>,<span class="string">'best'</span>);
+
+<span class="comment">%Calculation of the prediction(training data) using the coefficients that</span>
+<span class="comment">%eliminate feature 2</span>
+[B, FitInfo] = lasso(X, Y, <span class="string">'lambda'</span>, 0.0695);
+B = [FitInfo.Intercept; B];
+sz = size(X);
+X_lasso = [ones(sz(1), 1) X];
+ypred=X_lasso*B;
+
+<span class="comment">%%Calculation of the SSE</span>
+erro=Y-ypred;
+SSE = erro'*erro;
+
+
+<span class="comment">%For LS FIT (lambda=0)</span>
+
+[beta, FitInfo] = lasso(X, Y, <span class="string">'lambda'</span>, 0);
+beta = [FitInfo.Intercept; beta];
+sz = size(X);
+X_ls = [ones(sz(1), 1) X];
+ypred_ls=X_ls*beta;
+
+<span class="comment">%%Calculation of the SSE (LS estimation)</span>
+erro_ls=Y-ypred_ls;
+SSE_ls=erro_ls'*erro_ls;
+
+
+<span class="comment">%auxiliary array to plot y,ypred and ypred with LS (x axis)</span>
+N=linspace(1,50,50);
+
+<span class="comment">%plot of  y, the fit obtained for that value of lambda and the obtained</span>
+<span class="comment">%using LS fit</span>
+figure;
+plot(N,Y); hold <span class="string">on</span>;
+plot(N, ypred, <span class="string">'linewidth'</span>, 1.2); hold <span class="string">on</span>;
+plot(N, ypred_ls, <span class="string">'-*'</span>, <span class="string">'color'</span>, <span class="string">'green'</span>);
+grid <span class="string">on</span>;
+legend(<span class="string">'y'</span>,<span class="string">'y_{pred.} (\lambda = 0.0695)'</span>,<span class="string">'y_{pred.} LS (\lambda = 0)'</span>,<span class="string">'location'</span>,<span class="string">'best'</span>);
+xlabel(<span class="string">'N'</span>);
+ylabel(<span class="string">'y, y_{pred.}, y_{pred.}LS'</span>)
+title(<span class="string">'Fit for \lambda = 0.0695 and for LS fit (\lambda = 0)'</span>);
+
+fprintf(<span class="string">'\nQ2.4) SSE (lambda = 0) = %f\n      SSE (lambda = 0.0695) = %f\n'</span>, SSE_ls, SSE);
+</pre><pre class="codeoutput">
+Q2.4) SSE (lambda = 0) = 14.982010
+      SSE (lambda = 0.0695) = 15.719205
+</pre><img vspace="5" hspace="5" src="L1_04.png" alt=""> <img vspace="5" hspace="5" src="L1_05.png" alt=""> <p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2018a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Machine Learning 1st Lab Assignment - Linear Regression
+% Francisco Melo - 84053
+%
+% Rodrigo Rego - 89213
+%
+% Group Number - 1
+%
+% Shift - Sexta 14h
+%
+% 12/10/2018
+
+%% 1. Least Squares Fitting
+
+
+%% 1.3
+% Least Squares Fitting. P=1 to fit a straight line
+close all;
+clear all;
+
+load data1.mat;
+
+%polynomial order
+p=1;
+
+%polynomial fit of the variables x and y
+[beta,ypred]=polynomialFit(x,y,p);
+
+%plot of fit and training data
+figure;
+plot(x,y,'o',x,ypred);
+title('Fit of training data - data1.mat');
+legend('y','y_{pred.}','Location', 'Best');
+xlabel('x');
+ylabel('y');
+grid on;
+
+%Calculation of the sum of squared errors
+erro=y-ypred;
+SSE=erro'*erro;
+clc;
+fprintf('Q1.3) SSE = %f\n', SSE);
+%% 1.4
+% Least Squares Fitting. P=2 to fit a parabola
+close all;
+clear all;
+
+load data2.mat;
+
+%Polynomial order
+p=2;
+
+%polynomial fit of the variables x and y
+[beta,ypred]=polynomialFit(x,y,p);
+
+%Sort predicted points: order points by X coordinate - only for plotting
+%purposes
+sorted=(sortrows([x,ypred],1))';
+x_sorted=sorted(1,:);
+ypred_sorted=sorted(2,:);
+
+%plot of fit and training data
+figure;
+plot(x,y,'o',x_sorted,ypred_sorted,'-*');
+title('Fit of training data - data2.mat');
+legend('y', 'y_{pred.}', 'Location', 'Best');
+xlabel('x');
+ylabel('y');
+grid on;
+
+%Calculation of the sum of squared errors
+erro=y-ypred;
+SSE=erro'*erro;
+fprintf('\nQ1.4) SSE = %f\n', SSE);
+
+%% 1.5
+%  Least Squares Fitting. P=2 to fit a parabola with outlier point
+close all;
+clear all;
+
+load data2a.mat;
+
+%Polynomial order
+p=2;
+
+%polynomial fit of the variables x and y
+[beta,ypred]=polynomialFit(x,y,p);
+
+%Sort predicted points: order points by X coordinate - only for plotting
+%purposes
+sorted=(sortrows([x,ypred],1))';
+x_sorted=sorted(1,:);
+ypred_sorted=sorted(2,:);
+
+%plot of fit and training data
+figure;
+plot(x,y,'o',x_sorted,ypred_sorted,'-*');
+title('Fit of training data - data2a.mat');
+legend('y','y_{pred.}','Location', 'Best');
+xlabel('x');
+ylabel('y');
+grid on;
+
+%Calculation of the sum of squared errors
+erro=y-ypred;
+SSE=erro'*erro;
+fprintf('\nQ1.5) SSE = %f\n', SSE);
+%% 2. Regularization
+
+%% 2.2/2.4
+% Lasso Regression
+close all;
+clear all;
+
+load data3.mat;
+
+%Lasso calculation and plot
+[B,FitInfo] = lasso(X,Y);
+lassoPlot(B,FitInfo,'PlotType','Lambda','XScale','log');
+ylabel('\beta');
+hold on;
+grid on;
+
+%plot LS coefficients(lambda=0) for comparsion
+refline(0,B(:,1));
+
+%lambda that removes feature 2 (beta2=0) - from visual inspection of the
+%indexes in the vector of degrees of freedom obtained in FitInfo (when it
+%transitions from 3 to 2 df)
+lambda=FitInfo.Lambda(60);
+
+%plot vertical line for lambda in index 60 (when feature 2 shrinks to 0)
+line([lambda lambda],[0,3],'Color','red','LineStyle','REPLACE_WITH_DASH_DASH');
+
+legend(sprintf('Feature x_{1}'),sprintf('Feature x_{2}'),sprintf('Feature x_{3}'),'location','best');
+
+%Calculation of the prediction(training data) using the coefficients that
+%eliminate feature 2
+[B, FitInfo] = lasso(X, Y, 'lambda', 0.0695);
+B = [FitInfo.Intercept; B];
+sz = size(X);
+X_lasso = [ones(sz(1), 1) X];
+ypred=X_lasso*B;
+
+%%Calculation of the SSE
+erro=Y-ypred;
+SSE = erro'*erro;
+
+
+%For LS FIT (lambda=0)
+
+[beta, FitInfo] = lasso(X, Y, 'lambda', 0);
+beta = [FitInfo.Intercept; beta];
+sz = size(X);
+X_ls = [ones(sz(1), 1) X];
+ypred_ls=X_ls*beta;
+
+%%Calculation of the SSE (LS estimation)
+erro_ls=Y-ypred_ls;
+SSE_ls=erro_ls'*erro_ls;
+
+
+%auxiliary array to plot y,ypred and ypred with LS (x axis)
+N=linspace(1,50,50);
+
+%plot of  y, the fit obtained for that value of lambda and the obtained
+%using LS fit
+figure;
+plot(N,Y); hold on;
+plot(N, ypred, 'linewidth', 1.2); hold on;
+plot(N, ypred_ls, '-*', 'color', 'green');
+grid on;
+legend('y','y_{pred.} (\lambda = 0.0695)','y_{pred.} LS (\lambda = 0)','location','best');
+xlabel('N');
+ylabel('y, y_{pred.}, y_{pred.}LS')
+title('Fit for \lambda = 0.0695 and for LS fit (\lambda = 0)');
+
+fprintf('\nQ2.4) SSE (lambda = 0) = %f\n      SSE (lambda = 0.0695) = %f\n', SSE_ls, SSE);
+
+##### SOURCE END #####
+--></body></html>

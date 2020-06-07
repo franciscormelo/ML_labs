@@ -1,0 +1,337 @@
+%% Machine Learning 2nd LAB - The Gradient Descent Method
+% Francisco Melo - 84053
+%
+% Rodrigo Rego - 89213
+%
+% 19/10/2018
+
+%% Minimization of Functions of One Variable
+
+%% 2.1.1
+close all; clear all;
+
+quad1ini;
+
+v_a = [0.5 1 2 5];
+v_eta = [0.001 0.01 0.03 0.1 0.3 1 3];
+
+for i = 1:length(v_a)
+    a = v_a(i);
+    for j = 1:length(v_eta)
+        eta = v_eta(j);
+        
+        fprintf('\na = %.2f | eta = %.2f\n', v_a(i), v_eta(j));
+        quad1(a, eta);
+        
+    end
+end
+%% 2.2.1
+close all; clear all; clc;
+
+quad2ini;
+
+v_a = [2 20];
+v_eta = [0.01 0.03 0.1 0.3 1 3];
+
+for i = 1:length(v_a)
+    a = v_a(i);
+    for j = 1:length(v_eta)
+        eta = v_eta(j);
+        
+        fprintf('\na = %.2f | eta = %.2f\n', v_a(i), v_eta(j));
+        quad2;
+        
+    end
+end
+
+%% Minimization of functions of more than one variable
+
+%% 2.2.1 - Visualization of the Divergence Treshold
+% Before runing this section, disable all plotting in quad2.m
+
+close all; clear all; clc;
+quad2ini;
+t = 0.9:0.001:1.1;
+a = 2;
+tic
+h = waitbar(0,'Please wait...');
+for i = 1:length(t)
+    eta = t(i);
+    quad2;
+    close;
+    steps(i) = iter;
+    v_f(i) = f;
+    waitbar(i/length(t));
+end
+close(h)
+toc
+plot(t, steps)
+title('\eta vs. Iterations');
+xlabel('\eta');
+ylabel('Iterations');
+grid on;
+
+%% Momentum Term
+
+%% 3.1
+close all; clear all; clc;
+
+quad2ini;
+a = 20;
+
+v_alfa = [0 0.5 0.7 0.9 0.95];
+v_eta = [0.003 0.01 0.03 0.1 0.3 1 3 10];
+
+for i = 1:length(v_alfa)
+    alfa = v_alfa(i);
+    for j = 1:length(v_eta)
+        eta = v_eta(j);
+        
+        fprintf('\nalfa = %.2f | eta = %.2f\n', v_alfa(i), v_eta(j));
+        quad2;
+        
+    end
+end
+
+%% 3.1 - Visualization of Divergence Treshold
+% Before runing this section, disable all plotting in quad2.m
+
+close all; clear all; clc;
+quad2ini;
+t = 0.4:0.001:0.7;
+a = 20;
+alfa = 0.7;
+tic
+h = waitbar(0,'Please wait...');
+for i = 1:length(t)
+    eta = t(i);
+    quad2;
+    close;
+    steps(i) = iter;
+    v_f(i) = f;
+    waitbar(i/length(t));
+end
+close(h)
+toc
+plot(t, steps)
+title('\eta vs. Iterations');
+xlabel('\eta');
+ylabel('Iterations');
+grid on;
+
+%% Adaptive Step Sizes
+
+%% 4.1
+% Before runing this section, disable all plotting in rosen.m
+
+clear all; close all; clc;
+
+rosenini;
+
+v_alfa = 0:0.005:1;
+v_eta = 0.01:0.0005:0.05;
+
+M = zeros(length(v_eta), length(v_alfa));
+Mf = zeros(length(v_eta), length(v_alfa));
+
+h = waitbar(0, 'Please wait...');
+for i = 1:length(v_alfa)
+    alfa = v_alfa(i);
+    for j = 1:length(v_eta)
+        eta = v_eta(j);
+        
+        rosen;
+        if iter <= maxiter & abs(x1) < 2 & abs(x2) < 2
+            M(j,i) = iter;
+        else
+            M(j,i) = maxiter;
+        end
+        Mf(j,i) = f;
+    end
+    waitbar(i/length(v_alfa));
+end
+
+    close(h);
+
+minimum = min(min(M));
+[x,y]=find(M==minimum);
+save('BestPair1','v_alfa', 'v_eta', 'M', 'Mf', 'x', 'y');
+
+%% 4.1 - Result Processing
+clear all; close all; clc;
+load BestPair1;
+
+sz = size(M);
+fprintf('Number of tests = %d\n', sz(1)*sz(2))
+fprintf('Minimum number of iterations found = %d', M(x,y))
+m_alfa = v_alfa(y);
+m_eta = v_eta(x);
+fprintf('\nBest pair (alfa, eta) = (%.5f, %.5f)\n', m_alfa, m_eta)
+
+metas = [0.8*m_eta 0.9*m_eta 1.1*m_eta 1.2*m_eta];
+
+rosenini;
+
+alfa = m_alfa;
+
+for i = 1:length(metas)
+    eta = metas(i);
+    rosen;
+    if iter <= maxiter & abs(x1) < 2 & abs(x2) < 2
+        values(i) = iter;
+    else
+        values(i) = maxiter;
+    end
+end
+
+%% 4.3 - Active Adaptive Step Sizes
+clear all; close all; clc;
+
+rosenini;
+assact;
+a = 20;
+
+v_alfa = [0 0.5 0.7 0.9 0.95 0.99];
+v_eta = [0.001 0.01 0.1 1 10];
+
+for i = 1:length(v_alfa)
+    alfa = v_alfa(i);
+    for j = 1:length(v_eta)
+        eta = v_eta(j);
+        
+        fprintf('\nalfa = %.2f | eta = %.2f\n', v_alfa(i), v_eta(j));
+        rosen;
+        
+    end
+end
+
+%% 4.4 - Assdeact
+clear all; close all; clc;
+
+rosenini;
+assdeact;
+a = 100;
+
+v_alfa = 0:0.005:1;
+v_eta = 0.008:0.0005:0.05;
+
+M = zeros(length(v_eta), length(v_alfa));
+Mf = zeros(length(v_eta), length(v_alfa));
+
+h = waitbar(0, 'Please wait...');
+for i = 1:length(v_alfa)
+    alfa = v_alfa(i);
+    for j = 1:length(v_eta)
+        eta = v_eta(j);
+        
+        rosen;
+        if iter <= maxiter & abs(x1) < 2 & abs(x2) < 2
+            M(j,i) = iter;
+        else
+            M(j,i) = maxiter;
+        end
+        Mf(j,i) = f;
+    end
+    waitbar(i/length(v_alfa));
+end
+
+    close(h);
+
+minimum = min(min(M));
+[x,y]=find(M==minimum);
+save('BestPair2','v_alfa', 'v_eta', 'M', 'Mf', 'x', 'y');
+
+%% 4.4 - Assdeact Result Processing
+clear all; close all; clc;
+load BestPair2;
+
+sz = size(M);
+fprintf('Number of tests = %d\n', sz(1)*sz(2))
+fprintf('Minimum number of iterations found = %d', M(x,y))
+m_alfa = v_alfa(y);
+m_eta = v_eta(x);
+fprintf('\nBest pair (alfa, eta) = (%.5f, %.5f)\n', m_alfa, m_eta)
+
+metas = [0.9*m_eta 1.1*m_eta];
+
+rosenini;
+assdeact;
+a = 100;
+
+alfa = m_alfa;
+
+for i = 1:length(metas)
+    eta = metas(i);
+    rosen;
+    if iter <= maxiter & abs(x1) < 2 & abs(x2) < 2
+        values(i) = iter;
+    else
+        values(i) = maxiter;
+    end
+end
+
+
+%% 4.4 - Assact
+clear all; close all; clc;
+
+rosenini;
+assact;
+a = 100;
+
+v_alfa = 0:0.005:1;
+v_eta = 0.008:0.0005:0.05;
+
+M = zeros(length(v_eta), length(v_alfa));
+Mf = zeros(length(v_eta), length(v_alfa));
+
+h = waitbar(0, 'Please wait...');
+for i = 1:length(v_alfa)
+    alfa = v_alfa(i);
+    for j = 1:length(v_eta)
+        eta = v_eta(j);
+        
+        rosen;
+        if iter <= maxiter & abs(x1) < 2 & abs(x2) < 2
+            M(j,i) = iter;
+        else
+            M(j,i) = maxiter;
+        end
+        Mf(j,i) = f;
+    end
+    waitbar(i/length(v_alfa));
+end
+
+    close(h);
+
+minimum = min(min(M));
+[x,y]=find(M==minimum);
+save('BestPair32','v_alfa', 'v_eta', 'M', 'Mf', 'x', 'y');
+
+%% 4.4 - Assact Result Processing
+clear all; close all; clc;
+load BestPair32;
+
+sz = size(M);
+fprintf('Number of tests = %d\n', sz(1)*sz(2))
+fprintf('Minimum number of iterations found = %d', M(x,y))
+m_alfa = v_alfa(y);
+m_eta = v_eta(x);
+fprintf('\nBest pair (alfa, eta) = (%.5f, %.5f)\n', m_alfa, m_eta)
+
+metas = [0.9*m_eta 1.1*m_eta];
+
+rosenini;
+assact;
+a = 100;
+
+alfa = m_alfa;
+
+for i = 1:length(metas)
+    eta = metas(i);
+    rosen;
+    if iter <= maxiter & abs(x1) < 2 & abs(x2) < 2
+        values(i) = iter;
+    else
+        values(i) = maxiter;
+    end
+end
